@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate"
   },
   "keywords": [],
   "author": "",
@@ -22,7 +24,12 @@
   "type": "module",
   "devDependencies": {
     "@types/node": "^25.9.1",
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.22.3",
     "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2",
+    "postgres": "^3.4.9"
   }
 }
