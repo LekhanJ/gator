@@ -1,4 +1,4 @@
-import { handlerLogin, handlerRegister, handlerUsers, registerCommand, runCommand, type CommandsRegistry } from "./commander.js"
+import { handlerLogin, handlerRegister, handlerAgg, handlerUsers, registerCommand, runCommand, type CommandsRegistry } from "./commander.js"
 import { argv } from 'node:process';
 import { assertExists } from "./utils.js";
 
@@ -7,6 +7,7 @@ const registry: CommandsRegistry = {};
 registerCommand(registry, "login", handlerLogin);
 registerCommand(registry, "register", handlerRegister);
 registerCommand(registry, "users", handlerUsers);
+registerCommand(registry, "agg", handlerAgg);
 
 async function main() {
   const args = argv.slice(2);
