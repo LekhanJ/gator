@@ -1,8 +1,10 @@
 import { XMLParser } from "fast-xml-parser";
-import { readConfig, setUser } from "./config.js";
+import { readConfig, setUser, type Config } from "./config.js";
 import { createUser, getUser, getUsers } from "./lib/db/queries/users.js";
 import { assertExists } from "./utils.js";
 import { channel } from "node:diagnostics_channel";
+import { createFeed } from "./lib/db/queries/feeds.js";
+import type { Feed, User } from "./schema.js";
 
 export type CommandHandler = (
   cmdName: string,
@@ -91,6 +93,44 @@ export async function handlerUsers(cmdName: string): Promise<void> {
 export async function handlerAgg(cmdname: string): Promise<void> {
   const feed = await fetchFeed("https://www.wagslane.dev/index.xml");
   console.dir(feed, { depth: null });
+}
+
+export async function handlerAddFeed(cmdName: string, ...args: string[]): Promise<void> {
+  if (args.length !== 2) {
+    throw new Error(
+      "The addfeed command expects two arguments, name of the feed and url",
+    );
+  }
+
+  const name = args[0];
+  const url = args[1];
+  assertExists(name);
+  assertExists(url);
+  
+  const config: Config = readConfig();
+  const username = config.currentUserName;
+  assertExists(username);
+
+  const currUser = await getUser(username);
+  assertExists(currUser);
+
+  const feed = await createFeed(name, url, currUser.id);
+  assertExists(feed);
+
+  console.log("Feed Added."); 
+
+  printFeed(feed, currUser);
+}
+
+export function printFeed(
+  feed: Feed,
+  user: User
+): void {
+  console.log("Feed:");
+  console.log(`  id: ${feed.id}`);
+  console.log(`  name: ${feed.name}`);
+  console.log(`  url: ${feed.url}`);
+  console.log(`  user: ${user.name}`);
 }
 
 async function fetchFeed(feedUrl: string): Promise<RSSFeed> {
