@@ -1,4 +1,4 @@
-import { handlerLogin, handlerRegister, handlerAgg, handlerAddFeed, handlerUsers, registerCommand, runCommand, type CommandsRegistry } from "./commander.js"
+import { handlerLogin, handlerRegister, handlerAgg, handlerFollowing, handlerFollow, handlerAddFeed, handlerUsers, registerCommand, runCommand, type CommandsRegistry } from "./commander.js"
 import { argv } from 'node:process';
 import { assertExists } from "./utils.js";
 
@@ -9,33 +9,34 @@ registerCommand(registry, "register", handlerRegister);
 registerCommand(registry, "users", handlerUsers);
 registerCommand(registry, "agg", handlerAgg);
 registerCommand(registry, "addfeed", handlerAddFeed);
+registerCommand(registry, "follow", handlerFollow);
+registerCommand(registry, "following", handlerFollowing);
 
 async function main() {
-  const args = argv.slice(2);
+	const args = argv.slice(2);
 
-  if (args.length < 1) {
-    console.error("Not enough arguments were provided");
-    process.exit(1);
-  }
+	if (args.length < 1) {
+		console.error("Not enough arguments were provided");
+		process.exit(1);
+	}
 
-  const cmdName = args[0];
-  const cmdArgs = args.slice(1);
+	const cmdName = args[0];
+	const cmdArgs = args.slice(1);
 
-  assertExists(cmdName);
+	assertExists(cmdName, "Command is missing");
 
-  try {
-    await runCommand(registry, cmdName, ...cmdArgs);
-  } catch (err) {
-      if (err instanceof Error) {
-          console.error(err.message);
-      } else {
-          console.error(err);
-      }
+	try {
+		await runCommand(registry, cmdName, ...cmdArgs);
+	} catch (err) {
+		if (err instanceof Error)
+			console.error(err.message);
+		else
+			console.error(err);
 
-      process.exit(1);
-  }
+		process.exit(1);
+	}
 
-  process.exit(0)
+	process.exit(0)
 }
 
 main()
