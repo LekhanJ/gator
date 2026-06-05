@@ -1,6 +1,7 @@
-import { handlerLogin, handlerRegister, handlerAgg, handlerFollowing, handlerFollow, handlerAddFeed, handlerUsers, registerCommand, runCommand, type CommandsRegistry } from "./commander.js"
+import { handlerLogin, handlerRegister, handlerAgg, handlerUnfollow, handlerFollowing, handlerFollow, handlerAddFeed, handlerUsers, registerCommand, runCommand, type CommandsRegistry } from "./commander.js"
 import { argv } from 'node:process';
 import { assertExists } from "./utils.js";
+import { middlewareLoggedIn } from "./middleware.js";
 
 const registry: CommandsRegistry = {};
 
@@ -8,9 +9,10 @@ registerCommand(registry, "login", handlerLogin);
 registerCommand(registry, "register", handlerRegister);
 registerCommand(registry, "users", handlerUsers);
 registerCommand(registry, "agg", handlerAgg);
-registerCommand(registry, "addfeed", handlerAddFeed);
-registerCommand(registry, "follow", handlerFollow);
-registerCommand(registry, "following", handlerFollowing);
+registerCommand(registry, "addfeed", middlewareLoggedIn(handlerAddFeed));
+registerCommand(registry, "follow", middlewareLoggedIn(handlerFollow));
+registerCommand(registry, "following", middlewareLoggedIn(handlerFollowing));
+registerCommand(registry, "unfollow", middlewareLoggedIn(handlerUnfollow));
 
 async function main() {
 	const args = argv.slice(2);

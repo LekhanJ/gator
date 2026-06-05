@@ -63,7 +63,7 @@ export async function handlerRegister(cmdName: string, ...args: string[]): Promi
 	console.log(`User created: ${JSON.stringify(createdUser)}`);
 }
 
-export async function handlerUsers(cmdName: string): Promise<void> {
+export async function handlerUsers(cmdName: string, ...args: string[]): Promise<void> {
 	const users = await getUsers();
 	const config = readConfig();
 	users.forEach((user) => {
@@ -74,12 +74,12 @@ export async function handlerUsers(cmdName: string): Promise<void> {
 	});
 }
 
-export async function handlerAgg(cmdname: string): Promise<void> {
+export async function handlerAgg(cmdname: string, ...args: string[]): Promise<void> {
 	const feed = await fetchFeed("https://www.wagslane.dev/index.xml");
 	console.dir(feed, { depth: null });
 }
 
-export async function handlerAddFeed(cmdName: string, ...args: string[]): Promise<void> {
+export async function handlerAddFeed(cmdName: string, user: User, ...args: string[]): Promise<void> {
 	if (args.length !== 2)
 		throw new Error("The addfeed command expects two arguments, name of the feed and url");
 
@@ -88,62 +88,45 @@ export async function handlerAddFeed(cmdName: string, ...args: string[]): Promis
 	assertExists(name, "Name is missing");
 	assertExists(url, "Url is missing");
 
-	const config: Config = readConfig();
-	const username = config.currentUserName;
-	assertExists(username, "Username is missing");
-
-	const currUser = await getUser(username);
-	assertExists(currUser, "Current user does not exist");
-
-	const feed = await createFeed(name, url, currUser.id);
+	const feed = await createFeed(name, url, user.id);
 	assertExists(feed, "Feed does not exist");
 
-	const follow = await createFeedFollow(currUser.id, feed.id);
+	const follow = await createFeedFollow(user.id, feed.id);
 	assertExists(follow, "Following failed");
 
 	console.log("Feed Added.");
 
-	printFeed(feed, currUser);
+	printFeed(feed, user);
 
 	console.log(`${follow.userName} is now following ${follow.feedName}`);
 }
 
-export async function handlerFollow(cmdname: string, ...args: string[]): Promise<void> {
+export async function handlerFollow(cmdname: string, user: User, ...args: string[]): Promise<void> {
 	if (args.length !== 1)
 		throw new Error("The follow command expects a single argument, the feed url");
 
 	const url = args[0];
 	assertExists(url, "Url is missing");
-	
-	const config: Config = readConfig();
-	const username = config.currentUserName;
-	assertExists(username, "Username is missing");
-
-	const currUser = await getUser(username);
-	assertExists(currUser, "Current User does not exist");
 
 	const feed = await getFeedByUrl(url);
 	assertExists(feed, "Feed does not exist");
 
-	await createFeedFollow(currUser.id, feed.id);
+	await createFeedFollow(user.id, feed.id);
 
-	console.log(`${currUser.name} Followed ${feed.name}`);
+	console.log(`${user.name} Followed ${feed.name}`);
 }
 
-export async function handlerFollowing(): Promise<void> {
-	const config: Config = readConfig();
-	const username = config.currentUserName;
-	assertExists(username, "Username is missing");
-
-	const currUser = await getUser(username);
-	assertExists(currUser, "Current User does not exist");
-
-	const result = await getFeedFollowsForUser(currUser.id);
+export async function handlerFollowing(cmdName: string, user: User, ...args: string[]): Promise<void> {
+	const result = await getFeedFollowsForUser(user.id);
 
 	console.log("You are following these feeds: ");
 	result.forEach((res) => {
 		console.log(res.feedName)
 	})
+}
+
+export async function handlerUnfollow(cmdName: string, user: User, ...args: string[]): Promise<void> {
+	
 }
 
 export function printFeed(feed: Feed, user: User): void {
