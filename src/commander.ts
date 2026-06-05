@@ -4,7 +4,7 @@ import { createUser, getUser, getUsers } from "./lib/db/queries/users.js";
 import { assertExists } from "./utils.js";
 import { createFeed, getFeedByUrl } from "./lib/db/queries/feeds.js";
 import type { Feed, User } from "./schema.js";
-import { createFeedFollow, getFeedFollowsForUser } from "./lib/db/queries/feedFollows.js";
+import { createFeedFollow, deleteFeedFollows, getFeedFollowsForUser } from "./lib/db/queries/feedFollows.js";
 
 export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 export type CommandsRegistry = Record<string, CommandHandler>;
@@ -126,7 +126,18 @@ export async function handlerFollowing(cmdName: string, user: User, ...args: str
 }
 
 export async function handlerUnfollow(cmdName: string, user: User, ...args: string[]): Promise<void> {
-	
+	if (args.length !== 1)
+		throw new Error("The unfollow command expects a single argument, the feed url");
+
+	const url = args[0];
+	assertExists(url, "Url is missing");
+
+	const feed = await getFeedByUrl(url);
+	assertExists(feed, "You haven't followed this feed");
+
+	await deleteFeedFollows(user.id, feed.id);
+
+	console.log(`You unfollowed the feed ${feed.name}`);
 }
 
 export function printFeed(feed: Feed, user: User): void {

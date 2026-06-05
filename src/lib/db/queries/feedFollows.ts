@@ -1,6 +1,6 @@
 import { db } from "../index.js";
 import { feedFollows, feeds, users } from "../../../schema.js";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { assertExists } from "../../../utils.js";
 
 export async function createFeedFollow(userId: string, feedId: string) {
@@ -39,4 +39,8 @@ export async function getFeedFollowsForUser(userId: string) {
         .innerJoin(feeds, eq(feedFollows.feedId, feeds.id))
         .innerJoin(users, eq(feedFollows.userId, users.id))
         .where(eq(feedFollows.userId, userId));
+}
+
+export async function deleteFeedFollows(userId: string, feedId: string) {
+    const result = await db.delete(feedFollows).where(and(eq(feedFollows.id, userId), eq(feedFollows.id, feedId)));  
 }
